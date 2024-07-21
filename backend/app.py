@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 import docker
 import logging
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 client = docker.from_env()
 
 logging.basicConfig(level=logging.DEBUG)
@@ -16,7 +18,6 @@ def start_camera():
     data = request.json
     camera_number = data['cameraNumber']
     rtsp_url = data['rtspUrl']
-
     container_name = f'vid2frame_{camera_number}'
 
     try:
