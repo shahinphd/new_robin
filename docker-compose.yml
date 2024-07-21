@@ -1,0 +1,163 @@
+services:
+
+  db:
+    build: ./database
+    restart: unless-stopped
+    volumes:
+        - postgres_data:/var/lib/postgresql/data/
+    environment:
+        POSTGRES_DB: regdb
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+    expose:
+        - 5432
+          
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 20s
+      retries: 5
+  
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure  
+
+  # vid2frame:
+  #   build: ./vid2frame
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   restart: on-failure  
+  #   environment:
+  #     VID_SOURCE: rtsp://192.168.88.115:554/av0_0
+  #     VID_FPS: 5
+  #     CAM_NUMBER: 1
+  #     RABBITMQ_HOST: rabbitmq
+  #     RABBITMQ_QUEUE: frame_queue
+  #   volumes:
+  #     - type: bind
+  #       source: /home/next/Documents/Projects/shared
+  #       target: /shared  
+
+  detector:
+    build: ./detector
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure    
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      FRAME_QUEUE: frame_queue
+      FACE_QUEUE: face_queue
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - type: bind
+        source: /home/next/Documents/Projects/shared
+        target: /shared
+      # - type: volume
+      #   source: shared_volume
+      #   target: /shared
+
+  embedding:
+    build: ./embedding
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure    
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      FACE_QUEUE: face_queue
+      EMB_QUEUE: emb_queue
+    volumes:
+      - shared_volume:/shared  
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]     
+
+  matching:
+    build: ./matching
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure    
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      EMB_QUEUE: emb_queue
+      CLUSTER_QUEUE: cluster_queue
+      GB_QUEUE: gb_queue
+      POSTGRES_DB: regdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    volumes:
+      - shared_volume:/shared
+
+  cluster:
+    build: ./cluster
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure    
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      CLUSTER_QUEUE: cluster_queue
+      CLUSTER_THRESHOLD: 0.7
+      POSTGRES_DB: regdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    volumes:
+      - type: bind
+        source: /home/next/Documents/Projects/shared
+        target: /shared
+
+  groupby:
+    build: ./groupby
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure    
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      GB_QUEUE: gb_queue
+      POSTGRES_DB: regdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    volumes:
+      - type: bind
+        source: /home/next/Documents/Projects/shared
+        target: /shared
+
+volumes:
+  shared_volume:
+  postgres_data: {}
+
+networks:
+  default:
+    driver: bridge
