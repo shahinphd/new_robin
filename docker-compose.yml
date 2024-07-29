@@ -45,7 +45,9 @@ services:
   #     VID_FPS: 5
   #     CAM_NUMBER: 1
   #     RABBITMQ_HOST: rabbitmq
-  #     RABBITMQ_QUEUE: frame_queue
+  #     FRAME_QUEUE: frame_queue
+  #     STREAM_QUEUE: stream_queue
+
   #   volumes:
   #     - type: bind
   #       source: /home/next/Documents/Projects/shared
@@ -85,9 +87,7 @@ services:
     environment:
       RABBITMQ_HOST: rabbitmq
       FACE_QUEUE: face_queue
-      EMB_QUEUE: emb_queue
-    volumes:
-      - shared_volume:/shared  
+      EMB_QUEUE: emb_queue 
     deploy:
       resources:
         reservations:
@@ -106,14 +106,16 @@ services:
       RABBITMQ_HOST: rabbitmq
       EMB_QUEUE: emb_queue
       CLUSTER_QUEUE: cluster_queue
-      GB_QUEUE: gb_queue
+      # GB_QUEUE: gb_queue
       POSTGRES_DB: regdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
     volumes:
-      - shared_volume:/shared
+      - type: bind
+        source: /home/next/Documents/Projects/shared
+        target: /shared
 
   cluster:
     build: ./cluster
@@ -135,27 +137,27 @@ services:
         source: /home/next/Documents/Projects/shared
         target: /shared
 
-  groupby:
-    build: ./groupby
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    restart: on-failure    
-    environment:
-      RABBITMQ_HOST: rabbitmq
-      GB_QUEUE: gb_queue
-      POSTGRES_DB: regdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-    volumes:
-      - type: bind
-        source: /home/next/Documents/Projects/shared
-        target: /shared
+  # groupby:
+  #   build: ./groupby
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   restart: on-failure    
+  #   environment:
+  #     RABBITMQ_HOST: rabbitmq
+  #     GB_QUEUE: gb_queue
+  #     POSTGRES_DB: regdb
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_HOST: db
+  #     POSTGRES_PORT: 5432
+  #   volumes:
+  #     - type: bind
+  #       source: /home/next/Documents/Projects/shared
+  #       target: /shared
 
 volumes:
-  shared_volume:
+  # shared_volume:
   postgres_data: {}
 
 networks:

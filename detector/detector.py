@@ -67,6 +67,8 @@ def mtcnn_detection(df_images):
     frames_paths = []
     cam_ids = []
     img_bytes = []
+    # face_bytes = []
+    # frame_bytes = []
     scores = []
     times = []
     # faces = []
@@ -93,12 +95,24 @@ def mtcnn_detection(df_images):
                     if face_score>0.6:
                         # faces.append(ff)
                         scores.append(face_score)
+                        # img_str = cv2.imencode('.jpg', ff)[1].tostring()
+                        # face_bytes.append(img_str)
+                        # img_str = cv2.imencode('.jpg', images[j])[1].tostring()
+                        # frame_bytes.append(img_str)
+
+                        # nparr = np.fromstring(STRING_FROM_DATABASE, np.uint8)
+                        # img = cv2.imdecode(nparr, cv2.CV_LOAD_IMAGE_COLOR)
+
+
                         _, buffer = cv2.imencode('.jpg', ff)
                         img_encode =  base64.b64encode(buffer).decode('utf-8')
                         img_bytes.append(img_encode)
-                        t =  datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+
+                        t =  datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
                         times.append(t)
                         name = "/shared/frames/" + t + "_" + str(j) + ".jpg"
+                        
                         cv2.imwrite(name,cv2.cvtColor(images[j], cv2.COLOR_BGR2RGB))
                         frames_paths.append(name)
                         cam_ids.append(df_images["cam_id"][j])
@@ -106,6 +120,7 @@ def mtcnn_detection(df_images):
                         cv2.imwrite(name, cv2.cvtColor(ff, cv2.COLOR_BGR2RGB))
                         faces_paths.append(name)
 
+    # data = {'CameraID':cam_ids ,'FaceImg':img_bytes, "FacePath":faces_paths, "FramePath":frames_paths, "Score": scores, "DateTime": times}
     data = {'CameraID':cam_ids ,'FaceImg':img_bytes, "FacePath":faces_paths, "FramePath":frames_paths, "Score": scores, "DateTime": times}
     idf = pd.concat([idf,pd.DataFrame(data)],ignore_index = True)
     del(images, images2, frames_paths, faces_paths, cam_ids )
