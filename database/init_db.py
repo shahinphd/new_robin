@@ -46,7 +46,7 @@ def connect_to_db():
         dbname="regdb",
         user="postgres",
         password="postgres",
-        host="172.18.0.2",
+        host="172.18.0.3",
         port='5432'
     )
     return conn
@@ -57,7 +57,7 @@ def insert_to_db(conn, person_name, features, n_id):
     with conn.cursor() as cursor:
         cursor.execute(
             """
-            INSERT INTO person_embeddings (national_id, person_name, embedding_1, embedding_2, embedding_3, embedding_4, embedding_5)
+            INSERT INchatTO person_embeddings (national_id, person_name, embedding_1, embedding_2, embedding_3, embedding_4, embedding_5)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             (n_id, person_name, features[0], features[1], features[2], features[3], features[4])

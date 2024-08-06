@@ -26,7 +26,11 @@ cursor = conn.cursor()
 #     """
 # )
 
-
+cursor.execute(
+    """
+        DROP TABLE detected_people;
+    """
+)
 # Create the table
 cursor.execute(
     """

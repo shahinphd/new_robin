@@ -34,13 +34,46 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        let websocket;
+
         function viewCamera() {
-            const cameraNumber = $('#viewCameraNumber').val();
+            const hostIP = '192.168.88.225';
             const cameraFeed = $('#cameraFeed');
-            
-            cameraFeed.attr('src', `/video_feed/${cameraNumber}`);
-            cameraFeed.show();
+
+            // Close any existing WebSocket connection
+            if (websocket) {
+                websocket.close();
+            }
+
+            // Establish a new WebSocket connection
+            websocket = new WebSocket(`ws://${hostIP}:8000`);
+
+            websocket.onopen = function() {
+                console.log('WebSocket connection opened');
+            };
+
+            websocket.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                const frame = message.frame;
+                cameraFeed.attr('src', 'data:image/jpeg;base64,' + frame);
+                cameraFeed.show();
+            };
+
+            websocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+
+            websocket.onclose = function() {
+                console.warn('WebSocket connection closed');
+            };
         }
+
+        // Clean up WebSocket connection on page unload
+        window.onbeforeunload = function() {
+            if (websocket) {
+                websocket.close();
+            }
+        };
     </script>
 </body>
 </html>

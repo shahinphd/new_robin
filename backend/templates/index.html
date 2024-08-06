@@ -26,7 +26,7 @@
                     </div>
                 </form>
                 <div class="d-grid gap-2 mt-3">
-                    <a href="/camera-view" class="btn btn-primary">Go to Camera View</a>
+                    <button type="button" class="btn btn-primary" onclick="goToCameraView()">Go to Camera View</button>
                 </div>
             </div>
         </div>
@@ -79,6 +79,11 @@
             messageDiv.removeClass('d-none alert-success alert-danger');
             messageDiv.addClass(`alert-${type}`);
             messageDiv.text(message);
+        }
+
+        function goToCameraView() {
+            const cameraNumber = $('#cameraNumber').val();
+            window.location.href = `/camera-view/${cameraNumber}`;
         }
     </script>
 </body>

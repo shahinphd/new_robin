@@ -9,7 +9,9 @@ from model_detection.models.mtcnn import MTCNN
 import gc
 import base64
 import json
+# import pytz
 import math
+import shutil
 from collections import defaultdict
 
 def get_size(img):
@@ -137,6 +139,9 @@ def mtcnn_detection(df_images):
     return idf
 
 def detect_faces(channel, method, properties, body, batch = 50):
+    # print(body, flush=True)
+    if isinstance(body, (bytes, bytearray)):
+        body = body.decode('utf8').replace("'", '"')
 
     body = json.loads(body)
      
@@ -179,5 +184,11 @@ mtcnn = MTCNN(image_size=112, margin=20,min_face_size=100, thresholds=[.95, .95,
 
 global buffers
 buffers = defaultdict(list)
+if os.path.exists("/shared/frames"):
+    shutil.rmtree("/shared/frames")
+os.mkdir("/shared/frames")
 
+if os.path.exists("/shared/faces"):
+    shutil.rmtree("/shared/faces")
+os.mkdir("/shared/faces")
 start_detector()
