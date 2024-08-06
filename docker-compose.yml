@@ -1,7 +1,7 @@
 services:
 
   db:
-    image: new_robin-db 
+    build: ./database
     restart: unless-stopped
     volumes:
         - postgres_data:/var/lib/postgresql/data/
@@ -47,10 +47,6 @@ services:
   #     RABBITMQ_HOST: rabbitmq
   #     FRAME_QUEUE: frame_queue
   #     STREAM_QUEUE: stream_queue
-  #   volumes:
-  #     - type: bind
-  #       source: /home/next/Documents/Projects/shared
-  #       target: /shared  
 
   detector:
     build: ./detector
@@ -71,7 +67,7 @@ services:
               capabilities: [gpu]
     volumes:
       - type: bind
-        source: /home/nextera/Projects/Robin/shared
+        source: /home/next/Documents/Projects/shared
         target: /shared
       # - type: volume
       #   source: shared_volume
@@ -105,7 +101,6 @@ services:
       RABBITMQ_HOST: rabbitmq
       EMB_QUEUE: emb_queue
       CLUSTER_QUEUE: cluster_queue
-      PEOPLE_QUEUE: ppl_queue
       # GB_QUEUE: gb_queue
       POSTGRES_DB: regdb
       POSTGRES_USER: postgres
@@ -114,7 +109,7 @@ services:
       POSTGRES_PORT: 5432
     volumes:
       - type: bind
-        source: /home/nextera/Projects/Robin/shared
+        source: /home/next/Documents/Projects/shared
         target: /shared
 
   cluster:
@@ -126,8 +121,7 @@ services:
     environment:
       RABBITMQ_HOST: rabbitmq
       CLUSTER_QUEUE: cluster_queue
-      PEOPLE_QUEUE: ppl_queue
-      CLUSTER_THRESHOLD: 0.1
+      CLUSTER_THRESHOLD: 0.7
       POSTGRES_DB: regdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -135,18 +129,18 @@ services:
       POSTGRES_PORT: 5432
     volumes:
       - type: bind
-        source: /home/nextera/Projects/Robin/shared
+        source: /home/next/Documents/Projects/shared
         target: /shared
 
-  # websocket:
-  #   build: ./websocket
+  # groupby:
+  #   build: ./groupby
   #   depends_on:
   #     rabbitmq:
   #       condition: service_healthy
   #   restart: on-failure    
   #   environment:
   #     RABBITMQ_HOST: rabbitmq
-  #     PEOPLE_QUEUE: ppl_queue
+  #     GB_QUEUE: gb_queue
   #     POSTGRES_DB: regdb
   #     POSTGRES_USER: postgres
   #     POSTGRES_PASSWORD: postgres
