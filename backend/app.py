@@ -43,7 +43,7 @@ def start_camera():
                 'VID_FPS': 5,
                 'CAM_NUMBER': camera_number,
                 'RABBITMQ_HOST': 'rabbitmq',
-                'FRAME_QUEUE': f'frame_queue_{camera_number}'
+                'FRAME_QUEUE': f'frame_queue'
             },
             name=container_name,
             volumes={
@@ -52,7 +52,7 @@ def start_camera():
             restart_policy={"Name": "on-failure"},
             network='new_robin_default',
             ports={
-                '8765/tcp': 8000
+                '8765/tcp': 8900
             }
         )
 
