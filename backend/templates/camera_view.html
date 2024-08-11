@@ -37,7 +37,7 @@
         let websocket;
 
         function viewCamera() {
-            const hostIP = '192.168.88.225';
+            const hostIP = '192.168.88.106';
             const cameraFeed = $('#cameraFeed');
 
             // Close any existing WebSocket connection
@@ -46,7 +46,7 @@
             }
 
             // Establish a new WebSocket connection
-            websocket = new WebSocket(`ws://${hostIP}:8000`);
+            websocket = new WebSocket(`ws://${hostIP}:8900`);
 
             websocket.onopen = function() {
                 console.log('WebSocket connection opened');
